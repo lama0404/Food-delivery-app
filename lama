@@ -1,0 +1,47 @@
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+# Sample menu
+menu = [
+    {"id": 1, "name": "Pizza", "price": 12.99},
+    {"id": 2, "name": "Burger", "price": 8.99},
+    {"id": 3, "name": "Sushi", "price": 15.99},
+    {"id": 4, "name": "Pasta", "price": 10.99},
+]
+
+# Simple order storage
+orders = []
+
+# Home route
+@app.route('/')
+def home():
+    return jsonify({"message": "Welcome to the Food Delivery Service!"})
+
+# Show the menu
+@app.route('/menu', methods=['GET'])
+def get_menu():
+    return jsonify({"menu": menu})
+
+# Place an order
+@app.route('/order', methods=['POST'])
+def place_order():
+    order_data = request.get_json()
+    if 'items' not in order_data:
+        return jsonify({"error": "Items not provided"}), 400
+
+    order = {
+        "order_id": len(orders) + 1,
+        "items": order_data['items'],
+        "total": sum(item['price'] for item in order_data['items']),
+    }
+    orders.append(order)
+    return jsonify({"message": "Order placed successfully!", "order": order}), 201
+
+# View all orders (for admin or customer to track)
+@app.route('/orders', methods=['GET'])
+def view_orders():
+    return jsonify({"orders": orders})
+
+if __name__ == '__main__':
+    app.run(debug=True)
